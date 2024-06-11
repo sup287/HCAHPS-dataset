@@ -1,1 +1,29 @@
 
+WITH hospital_beds_prep AS (
+    SELECT 
+        RIGHT('000000' + CAST(Provider_CCN AS NVARCHAR), 6) AS provider_CCN,
+        Hospital_Name, 
+        CONVERT(DATE, Fiscal_Year_Begin_Date, 101) AS Fiscal_Year_Begin_Date,
+        CONVERT(DATE, Fiscal_Year_End_Date, 101) AS Fiscal_Year_End_Date, 
+        Number_of_Beds, 
+        ROW_NUMBER() OVER (PARTITION BY Provider_CCN ORDER BY CONVERT(DATE, Fiscal_Year_End_Date, 101) DESC) AS nth_row
+    FROM 
+        [Hospital Beds]
+)
+
+SELECT 
+    RIGHT('000000' + CAST(hcahps.facility_id AS NVARCHAR), 6) AS provider_ccn, 
+    CONVERT(DATE, Start_Date, 101) AS start_date_converted, 
+    CONVERT(DATE, End_Date, 101) AS end_date_converted, 
+    hcahps.*, 
+    beds.Number_of_Beds, 
+    beds.Fiscal_Year_Begin_Date AS beds_start_report_period, 
+    beds.Fiscal_Year_End_Date AS beds_end_report_period
+FROM 
+    [v1 HCAHPS 2022] AS hcahps 
+LEFT JOIN 
+    hospital_beds_prep AS beds 
+ON 
+    RIGHT('000000' + CAST(hcahps.facility_id AS NVARCHAR), 6) = beds.provider_ccn
+AND 
+    beds.nth_row = 1;
