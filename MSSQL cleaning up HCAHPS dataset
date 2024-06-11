@@ -1,3 +1,7 @@
+--Utilizing CTE's and JOINS to create one table that can be uploaded to Tableau for visualization 
+--Data cleaning: adding 0's in front of provider_ccn & facility_id as excel removes 0's, correcting the data format
+
+
 
 WITH hospital_beds_prep AS (
     SELECT 
